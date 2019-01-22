@@ -1,11 +1,13 @@
 require 'todoable/client'
 require 'todoable/config'
+require 'todoable/item'
 require 'todoable/list'
 require 'todoable/version'
 
 # the root of the Todoable gem
 module Todoable
   class Error < StandardError; end
+  class UnprocessableError < StandardError; end
 
   class << self
     def configure
