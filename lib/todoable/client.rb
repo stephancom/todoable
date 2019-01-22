@@ -11,10 +11,13 @@ module Todoable
   class Client
     include Singleton
 
-    attr_reader :conn
-
     def initialize
       refresh
+    end
+
+    def conn
+      refresh if @conn.nil? || !token_valid?
+      @conn
     end
 
     private
@@ -37,6 +40,7 @@ module Todoable
     end
 
     def authenticate
+      @conn = nil # eliminate existing connection
       authconn = Faraday.new(url: Todoable.config.host) do |f|
         f.response :oj
         f.headers['Accept'] = 'application/json'
