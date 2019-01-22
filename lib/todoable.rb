@@ -1,3 +1,4 @@
+require 'todoable/client'
 require 'todoable/config'
 require 'todoable/version'
 
@@ -12,6 +13,10 @@ module Todoable
 
     def config
       Todoable::Config.instance
+    end
+
+    def client
+      Todoable::Client.instance
     end
   end
 end
