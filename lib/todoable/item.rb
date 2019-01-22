@@ -41,8 +41,11 @@ module Todoable
     # Mark item finished
     #
     # @see http://todoable.teachable.tech/#put-lists-id-items-id-finish
+    #
+    # @return [Time]
     def finish!
-      response = Todoable.http.put([@src, 'finish'].join('/'))
+      response = Todoable::Client.instance.conn2.put([@src, 'finish'].join('/'))
+      # response = Todoable.http.put([@src, 'finish'].join('/'))
       raise Error, response.body unless response.status == Client::HTTP_OK
 
       @finished_at = Time.now

@@ -34,6 +34,28 @@ module Todoable
       @conn
     end
 
+    def conn2
+      refresh if @conn.nil? || !token_valid?
+      Faraday.new(url: Todoable.config.host) do |f|
+        f.request  :url_encoded
+        f.headers['Accept'] = 'application/json'
+        f.headers['Content-Type'] = 'application/json'
+        f.token_auth(@token)
+        f.adapter Faraday.default_adapter
+      end
+    end
+
+    def conn3
+      refresh if @conn.nil? || !token_valid?
+      Faraday.new(url: Todoable.config.host) do |f|
+        f.response :oj
+        f.headers['Accept'] = 'application/json'
+        f.headers['Content-Type'] = 'application/json'
+        f.token_auth(@token)
+        f.adapter Faraday.default_adapter
+      end
+    end
+
     private
 
     # Common settings for Faraday

@@ -65,11 +65,11 @@ module Todoable
     # @see http://todoable.teachable.tech/#patch-lists-id
     #
     # @param name [String] new name for list
-    def name=(name)
+    def name=(new_name)
       return if @name == new_name
 
       @name = new_name
-      Todoable.http.patch(@url, list: { name: name })
+      Todoable::Client.instance.conn2.patch(@src, list: { name: @name })
       raise UnprocessableError, response.body if response.status == Client::HTTP_UNPROCESSABLE_ENTITY
       raise Error, response.body unless response.status == Client::HTTP_NO_CONTENT
     end
@@ -96,9 +96,11 @@ module Todoable
     # @param name [String] name of item
     # @return [Item] the newly created item
     def add_item(name)
-      Item.from_params Todoable.http.post([@src, 'items'].join('/'), item: { name: name }).body['item']
+      response = Todoable.http.post([@src, 'items'].join('/'), item: { name: name })
       raise UnprocessableError, response.body if response.status == Client::HTTP_UNPROCESSABLE_ENTITY
       raise Error, response.body unless response.status == Client::HTTP_CREATED
+
+      Item.from_params response.body
     end
 
     # Destroy list
