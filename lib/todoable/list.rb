@@ -25,7 +25,6 @@ module Todoable
     def initialize(name, id, src)
       @items = []
       @name = name
-      return if id.nil?
       @id = id
       @src = src
     end
