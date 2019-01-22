@@ -1,5 +1,6 @@
 require 'todoable/client'
 require 'todoable/config'
+require 'todoable/list'
 require 'todoable/version'
 
 # the root of the Todoable gem
@@ -15,8 +16,8 @@ module Todoable
       Todoable::Config.instance
     end
 
-    def client
-      Todoable::Client.instance
+    def http
+      Todoable::Client.instance.conn
     end
   end
 end
