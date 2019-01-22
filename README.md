@@ -1,4 +1,4 @@
-# Todoable
+# Todoable [![Build Status](https://travis-ci.org/stephancom/battleship.svg?branch=master)](https://travis-ci.org/stephancom/battleship) [![Maintainability](https://api.codeclimate.com/v1/badges/fa5d67dca7c10164f085/maintainability)](https://codeclimate.com/github/stephancom/battleship/maintainability) [![Test Coverage](https://api.codeclimate.com/v1/badges/fa5d67dca7c10164f085/test_coverage)](https://codeclimate.com/github/stephancom/battleship/test_coverage)
 
 ## Todo items as a service. Just for you. We are in closed beta.
 
