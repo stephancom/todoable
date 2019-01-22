@@ -1,76 +1,116 @@
 module Todoable
+  # Represents a Todoable list
+  #
+  # @see http://todoable.teachable.tech
+  #
+  # @since v0.1.0
   class List
+    # base endpoint for listing/creating lists
     ENDPOINT = 'lists'.freeze
 
     class << self
+      # Retrieve all lists
+      #
+      # @see http://todoable.teachable.tech/#get-lists
+      #
+      # @return [Array<List>] the lists
       def all
-        Todoable.http.get(ENDPOINT).body['lists'].map do |params|
+        response = Todoable.http.get(ENDPOINT)
+        raise Error, response.body unless response.status == Client::HTTP_OK
+
+        response.body['lists'].map do |params|
           from_params params
         end
       end
 
-      def from_params(params)
-        list = new params['name'], params['id'], params['src']
-      end
-
+      # Create list
+      #
+      # @see http://todoable.teachable.tech/#post-lists
+      #
+      # @param name [String]
+      # @return [List]
       def create(name)
-        result = Todoable.http.post(ENDPOINT, list: { name: name })
-        raise UnprocessableError, result.body if result.status == 422
+        response = Todoable.http.post(ENDPOINT, list: { name: name })
+        raise UnprocessableError, response.body if response.status == Client::HTTP_UNPROCESSABLE_ENTITY
+        raise Error, response.body unless response.status == Client::HTTP_CREATED
 
-        from_params result.body
+        from_params response.body
       end
 
-      def find(id)
-        from_params Todoable.http.get([ENDPOINT, id].join('/')).body['list']
+      # Creates list object from params
+      #
+      # @param params [Hash]
+      # @return [List]
+      def from_params(params)
+        new params['name'], params['id'], params['src']
       end
     end
 
+    # @return [String] list name
     attr_reader :name
-    def initialize(name, id = nil, src = nil)
-      @items = []
+
+    # Initialize new list
+    #
+    # @param name [String] name of list
+    # @param id [String] GUID of list
+    # @param src [String] canonical full URL of list
+    def initialize(name, id, src)
       @name = name
       @id = id
       @src = src
     end
 
-    def name=(new_name)
+    # Change list name, and update to server
+    #
+    # @see http://todoable.teachable.tech/#patch-lists-id
+    #
+    # @param name [String] new name for list
+    def name=(name)
       return if @name == new_name
 
       @name = new_name
-      update
+      Todoable.http.patch(@url, list: { name: name })
+      raise UnprocessableError, response.body if response.status == Client::HTTP_UNPROCESSABLE_ENTITY
+      raise Error, response.body unless response.status == Client::HTTP_NO_CONTENT
     end
 
+    # Retrieve list items.  May update name as a side effect.
+    #
+    # @see http://todoable.teachable.tech/#post-lists
+    #
+    # @return [Array<Item>] list of items
     def items
-      result = Todoable.http.get(@src)
-      @name = result.body['name']
-      Item.from_array result.body['items']
+      response = Todoable.http.get(@src)
+      raise Error, response.body unless response.status == Client::HTTP_OK
+
+      @name = response.body['name']
+      response.body['items'].map do |params|
+        Item.from_params params
+      end
     end
 
+    # Add new item to list
+    #
+    # @see http://todoable.teachable.tech/#post-lists-id-items
+    #
+    # @param name [String] name of item
+    # @return [Item] the newly created item
     def add_item(name)
-      Todoable.http.post([@src, 'items'].join('/'), item: { name: name }).body['item']
+      Item.from_params Todoable.http.post([@src, 'items'].join('/'), item: { name: name }).body['item']
+      raise UnprocessableError, response.body if response.status == Client::HTTP_UNPROCESSABLE_ENTITY
+      raise Error, response.body unless response.status == Client::HTTP_CREATED
     end
 
+    # Destroy list
+    #
+    # @see http://todoable.teachable.tech/#delete-lists-id
     def destroy
-      return if @src.nil?
+      response = Todoable.http.delete(@src)
+      raise Error, response.body unless response.status == Client::HTTP_NO_CONTENT
 
-      result = Todoable.http.delete(@src)
-      raise NotFound if result.status == 404
-
+      # prevent trying to delete it again
       @id = nil
       @src = nil
-    end
-
-    private
-
-    private_class_method :find
-
-    def refresh
-      # fetch list from server, updating name and items
-    end
-
-    def update
-      # update to server
-      refresh
     end
   end
 end

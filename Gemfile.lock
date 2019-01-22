@@ -1,7 +1,7 @@
 PATH
   remote: .
   specs:
-    todoable (0.0.1)
+    todoable (0.1.0)
       faraday (~> 0.15.0)
       faraday_middleware-parse_oj (~> 0.3.2)
 
